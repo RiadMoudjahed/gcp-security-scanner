@@ -70,8 +70,8 @@ def check_public_access(bindings):
         role = binding["role"]
         members = binding["members"]
 
-        if member in PUBLIC_MEMBERS:
-            for member in members:
+        for member in members:
+            if member in PUBLIC_MEMBERS:
                 findings.append({
                     "severity": "CRITICAL",
                     "rule": "PUBLIC_ACCESS_GRANTED",
@@ -100,12 +100,12 @@ def check_service_account_primitive_roles(bindings):
         for member in members:
             if role in PRIMITIVE_ROLES and member.startswith("serviceAccount:"):
                 findings.append({
-                "severity": "HIGH",
-                "rule": "SA_PRIMITIVE_ROLE",
-                "member": member,
-                "role": role,
-                "reason": f"{member} has primitive role {role}. Use specific roles instead."
-        })
+                    "severity": "HIGH",
+                    "rule": "SA_PRIMITIVE_ROLE",
+                    "member": member,
+                    "role": role,
+                    "reason": f"{member} has primitive role {role}. Use specific roles instead."
+                })
                     
 
 
@@ -127,6 +127,8 @@ def analyze_policy(policy):
     return findings
 
 
+count_high = 0
+count_critical = 0
 def print_report(findings, project_id):
   """Print a clean report."""
     print("══════════════════════════════════════")
@@ -135,14 +137,13 @@ def print_report(findings, project_id):
     print("══════════════════════════════════════\n")
 
     for finding in findings:
-        print(f"{finding['severity']} {finding['rule']}")
+        print(f"[{finding['severity']}] {finding['rule']}")
         print(f"Member : {finding['member']}")
         print(f"Role   : {finding['role']}")
         print(f"Reason : {finding['reason']}")
         print("─────────────────────────────────────")
 
-        count_high = 0
-        count_critical = 0
+
 
         if finding["severity"] == "HIGH":
             count_high += 1
