@@ -127,8 +127,7 @@ def analyze_policy(policy):
     return findings
 
 
-count_high = 0
-count_critical = 0
+
 def print_report(findings, project_id):
     """Print a clean report."""
     print("══════════════════════════════════════")
@@ -143,7 +142,8 @@ def print_report(findings, project_id):
         print(f"Reason : {finding['reason']}")
         print("─────────────────────────────────────")
 
-
+        count_high = 0
+        count_critical = 0
 
         if finding["severity"] == "HIGH":
             count_high += 1
