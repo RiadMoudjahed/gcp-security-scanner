@@ -1,9 +1,13 @@
 import pytest
+import json
 from scanner.iam_auditor import (
     analyze_policy,
     check_primitive_roles,
     check_public_access,
-    check_service_account_primitive_roles
+    check_service_account_primitive_roles,
+    get_project_id,
+    get_iam_policy,
+    print_report
 )
 
 
@@ -278,8 +282,8 @@ class TestIAMErrorHandling:
         }
         
         findings = analyze_policy(fake_policy)
-        # Should handle gracefully, maybe return empty findings or skip the binding
-        assert isinstance(findings, list)
+        # Should handle gracefully and return empty findings
+        assert findings == []
 
     def test_analyze_policy_with_none_bindings(self):
         """Test analyze_policy with None bindings"""
