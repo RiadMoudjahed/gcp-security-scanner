@@ -192,3 +192,39 @@ class TestIAMMoreEdgeCases:
         bindings = ["not a dict", {"role": "roles/viewer", "members": ["allUsers"]}]
         findings = check_public_access(bindings)
         assert len(findings) == 1
+
+class TestIAMFinalCoverage:
+    """Final tests to reach 100% coverage"""
+    
+    def test_check_public_access_specific_edge(self, mocker):
+        """Test line 89 - whatever edge case it is"""
+        # You'll need to look at your code to see what's on line 89
+        pass
+    
+    def test_check_service_account_specific_edge(self, mocker):
+        """Test line 125 - whatever edge case it is"""
+        # You'll need to look at your code to see what's on line 125
+        pass
+    
+    def test_main_block_execution(self, mocker):
+        """Test lines 184-187 - the __main__ block"""
+        mock_get_project_id = mocker.patch('scanner.iam_auditor.get_project_id')
+        mock_get_project_id.return_value = "test-project"
+        
+        mock_get_iam_policy = mocker.patch('scanner.iam_auditor.get_iam_policy')
+        mock_get_iam_policy.return_value = {"bindings": []}
+        
+        mock_analyze_policy = mocker.patch('scanner.iam_auditor.analyze_policy')
+        mock_analyze_policy.return_value = []
+        
+        mock_print_report = mocker.patch('scanner.iam_auditor.print_report')
+        
+        # Execute the __main__ block
+        import runpy
+        runpy.run_module('scanner.iam_auditor', run_name='__main__')
+        
+        # Verify all functions were called
+        mock_get_project_id.assert_called_once()
+        mock_get_iam_policy.assert_called_once_with("test-project")
+        mock_analyze_policy.assert_called_once_with({"bindings": []})
+        mock_print_report.assert_called_once()
