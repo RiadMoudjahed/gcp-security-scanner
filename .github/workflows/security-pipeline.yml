@@ -67,7 +67,7 @@ jobs:
             -v
       - name: Enforce coverage threshold
         run: |
-          pytest tests/ --conv=scanner --cov-fail-under=70
+          pytest tests/ --cov=scanner --cov-fail-under=70
 
       # ─────────────────────────────────────
       # YOUR JOB: Add the coverage threshold step here
