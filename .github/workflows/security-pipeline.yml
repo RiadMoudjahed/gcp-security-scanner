@@ -65,6 +65,9 @@ jobs:
             --cov=scanner \
             --cov-report=term-missing \
             -v
+      - name: Enforce coverage threshold
+        run: |
+          pytest tests/ --conv=scanner --cov-fail-under=70
 
       # ─────────────────────────────────────
       # YOUR JOB: Add the coverage threshold step here
