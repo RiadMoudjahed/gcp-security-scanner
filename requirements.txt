@@ -3,5 +3,5 @@ google-cloud-compute==1.14.0
 google-cloud-storage==2.14.0
 google-auth==2.28.0
 bandit==1.7.7
-pytest==8.1.0
-pytest-cov==5.0.0
+pytest==9.0.2
+pytest-cov==7.0.0
