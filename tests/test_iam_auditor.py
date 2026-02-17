@@ -135,3 +135,155 @@ class TestIAMEdgeCases:
         findings = analyze_policy(fake_policy)
         
         assert len(findings) == 0
+
+
+class TestIAMHelperFunctions:
+    """Direct tests for the individual checker functions"""
+
+    def test_check_primitive_roles_with_violation(self):
+        """Test check_primitive_roles function directly with a violation"""
+        bindings = [{
+            "role": "roles/owner",
+            "members": ["user:admin@example.com", "group:admins@example.com"]
+        }]
+        
+        findings = check_primitive_roles(bindings)
+        
+        assert len(findings) == 2  # Two members with primitive roles
+        assert all(f["rule"] == "PRIMITIVE_ROLE_ASSIGNED" for f in findings)
+        assert all(f["severity"] == "HIGH" for f in findings)
+
+    def test_check_primitive_roles_with_safe_roles(self):
+        """Test check_primitive_roles function with safe roles"""
+        bindings = [{
+            "role": "roles/storage.objectViewer",
+            "members": ["user:viewer@example.com"]
+        }]
+        
+        findings = check_primitive_roles(bindings)
+        
+        assert len(findings) == 0
+
+    def test_check_public_access_with_violation(self):
+        """Test check_public_access function directly"""
+        bindings = [{
+            "role": "roles/storage.objectViewer",
+            "members": ["allUsers", "allAuthenticatedUsers", "user:someone@example.com"]
+        }]
+        
+        findings = check_public_access(bindings)
+        
+        assert len(findings) == 2  # Two public members
+        assert all(f["rule"] == "PUBLIC_ACCESS_GRANTED" for f in findings)
+        assert all(f["severity"] == "CRITICAL" for f in findings)
+
+    def test_check_public_access_with_no_public(self):
+        """Test check_public_access function with no public access"""
+        bindings = [{
+            "role": "roles/storage.objectViewer",
+            "members": ["user:someone@example.com", "group:test@example.com"]
+        }]
+        
+        findings = check_public_access(bindings)
+        
+        assert len(findings) == 0
+
+    def test_check_service_account_primitive_roles_with_violation(self):
+        """Test check_service_account_primitive_roles with primitive roles on SAs"""
+        bindings = [{
+            "role": "roles/editor",
+            "members": [
+                "serviceAccount:sa1@project.iam.gserviceaccount.com",
+                "serviceAccount:sa2@project.iam.gserviceaccount.com",
+                "user:admin@example.com"  # This shouldn't be flagged by this function
+            ]
+        }]
+        
+        findings = check_service_account_primitive_roles(bindings)
+        
+        assert len(findings) == 2  # Two service accounts with primitive role
+        assert all(f["rule"] == "SA_PRIMITIVE_ROLE" for f in findings)
+        assert all(f["severity"] == "HIGH" for f in findings)
+
+    def test_check_service_account_primitive_roles_with_safe_roles(self):
+        """Test check_service_account_primitive_roles with non-primitive roles"""
+        bindings = [{
+            "role": "roles/storage.objectViewer",
+            "members": ["serviceAccount:sa@project.iam.gserviceaccount.com"]
+        }]
+        
+        findings = check_service_account_primitive_roles(bindings)
+        
+        assert len(findings) == 0
+
+    def test_check_service_account_primitive_roles_with_mixed_members(self):
+        """Test SA primitive role check with mixed member types"""
+        bindings = [
+            {
+                "role": "roles/owner",
+                "members": [
+                    "serviceAccount:sa1@project.iam.gserviceaccount.com",
+                    "user:admin@example.com"
+                ]
+            },
+            {
+                "role": "roles/editor",
+                "members": [
+                    "serviceAccount:sa2@project.iam.gserviceaccount.com"
+                ]
+            },
+            {
+                "role": "roles/viewer",  # Not primitive
+                "members": [
+                    "serviceAccount:sa3@project.iam.gserviceaccount.com"
+                ]
+            }
+        ]
+        
+        findings = check_service_account_primitive_roles(bindings)
+        
+        # Should find: sa1 (owner) and sa2 (editor) = 2 findings
+        assert len(findings) == 2
+        members_found = [f["member"] for f in findings]
+        assert "serviceAccount:sa1@project.iam.gserviceaccount.com" in members_found
+        assert "serviceAccount:sa2@project.iam.gserviceaccount.com" in members_found
+
+
+class TestIAMErrorHandling:
+    """Tests for error handling and edge cases in helper functions"""
+
+    def test_check_primitive_roles_empty_bindings(self):
+        """Test check_primitive_roles with empty bindings list"""
+        findings = check_primitive_roles([])
+        assert len(findings) == 0
+
+    def test_check_public_access_empty_bindings(self):
+        """Test check_public_access with empty bindings list"""
+        findings = check_public_access([])
+        assert len(findings) == 0
+
+    def test_check_service_account_primitive_roles_empty_bindings(self):
+        """Test check_service_account_primitive_roles with empty bindings list"""
+        findings = check_service_account_primitive_roles([])
+        assert len(findings) == 0
+
+    def test_analyze_policy_with_malformed_bindings(self):
+        """Test analyze_policy handles malformed bindings gracefully"""
+        # Missing 'members' key
+        fake_policy = {
+            "bindings": [{
+                "role": "roles/owner"
+                # No members key
+            }]
+        }
+        
+        findings = analyze_policy(fake_policy)
+        # Should handle gracefully, maybe return empty findings or skip the binding
+        assert isinstance(findings, list)
+
+    def test_analyze_policy_with_none_bindings(self):
+        """Test analyze_policy with None bindings"""
+        fake_policy = {"bindings": None}
+        
+        findings = analyze_policy(fake_policy)
+        assert findings == []  # Should return empty list
