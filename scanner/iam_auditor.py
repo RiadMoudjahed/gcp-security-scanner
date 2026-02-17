@@ -161,6 +161,9 @@ def print_report(findings, project_id):
     print(f"Project: {project_id}")
     print("══════════════════════════════════════\n")
 
+    count_high = 0
+    count_critical = 0
+
     for finding in findings:
         print(f"[{finding['severity']}] {finding['rule']}")
         print(f"Member : {finding['member']}")
@@ -168,16 +171,13 @@ def print_report(findings, project_id):
         print(f"Reason : {finding['reason']}")
         print("─────────────────────────────────────")
 
-        count_high = 0
-        count_critical = 0
-
         if finding["severity"] == "HIGH":
             count_high += 1
         elif finding["severity"] == "CRITICAL":
             count_critical += 1
-        
+
     total = count_high + count_critical
-    print(f"\nTotal findings: {total}({count_high} HIGH, {count_critical} CRITICAL)")
+    print(f"\nTotal findings: {total} ({count_high} HIGH, {count_critical} CRITICAL)")
 
 
 if __name__ == "__main__":
