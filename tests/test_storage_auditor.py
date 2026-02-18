@@ -164,30 +164,42 @@ class TestStorageEdgeCases:
             assert findings[0]["member"] == "allUsers"
             assert findings[1]["member"] == "allAuthenticatedUsers"
 
-    def test_error_handling_skips_problem_buckets(self):
-        """
-        GIVEN: A bucket that causes an error when accessing
-        WHEN:  We analyze the buckets
-        THEN:  The auditor skips it without crashing
-        """
-        fake_buckets = ["gs://error-bucket", "gs://good-bucket"]
+def test_error_handling_skips_problem_buckets(self):
+    """
+    GIVEN: A bucket that causes an error when accessing
+    WHEN:  We analyze the buckets
+    THEN:  The auditor skips it without crashing
+    """
+    fake_buckets = ["gs://error-bucket", "gs://good-bucket"]
+    
+    with patch('scanner.storage_auditor.get_bucket_iam_policy') as mock_get_policy, \
+         patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
         
-        with patch('scanner.storage_auditor.get_bucket_iam_policy') as mock_get_policy, \
-             patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
-            
-            # First bucket raises exception
-            mock_get_policy.side_effect = [Exception("Access denied"), {"bindings": []}]
-            
-            # Metadata for the good bucket
-            mock_get_metadata.return_value = {
+        # Configure mocks to raise exceptions for the error bucket
+        def policy_side_effect(bucket):
+            if bucket == "gs://error-bucket":
+                raise Exception("Access denied")
+            return {"bindings": []}
+        
+        def metadata_side_effect(bucket):
+            if bucket == "gs://error-bucket":
+                raise Exception("Access denied")
+            return {
                 "uniform_access": False,
                 "versioning": False
             }
-            
-            findings = analyze_storage(fake_buckets)
-            
-            # Should only have findings from the second bucket
-            assert len(findings) == 2  # One for uniform_access, one for versioning
+        
+        mock_get_policy.side_effect = policy_side_effect
+        mock_get_metadata.side_effect = metadata_side_effect
+        
+        findings = analyze_storage(fake_buckets)
+        
+        # Should only have findings from the second bucket (uniform_access + versioning)
+        assert len(findings) == 2
+        
+        # Verify all findings are from the good bucket
+        for finding in findings:
+            assert finding["resource"] == "gs://good-bucket"
 
 
 class TestStorageHelperFunctions:
@@ -343,3 +355,47 @@ class TestStorageAnalyzeFunction:
             assert findings[0]["rule"] == "PUBLIC_BUCKET_ACCESS"
             assert findings[1]["rule"] == "UNIFORM_ACCESS_DISABLED"
             assert findings[2]["rule"] == "VERSIONING_DISABLED"
+
+class TestStorageErrorHandling:
+    """Additional tests for error handling coverage"""
+    
+    def test_uniform_access_error_handling(self):
+        """Test that check_uniform_access handles exceptions gracefully"""
+        fake_buckets = ["gs://error-bucket"]
+        
+        with patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
+            mock_get_metadata.side_effect = Exception("Access denied")
+            
+            findings = check_uniform_access(fake_buckets)
+            
+            assert len(findings) == 0  # Should skip error bucket
+    
+    def test_versioning_error_handling(self):
+        """Test that check_versioning handles exceptions gracefully"""
+        fake_buckets = ["gs://error-bucket"]
+        
+        with patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
+            mock_get_metadata.side_effect = Exception("Access denied")
+            
+            findings = check_versioning(fake_buckets)
+            
+            assert len(findings) == 0  # Should skip error bucket
+
+
+class TestStorageMainBlock:
+    """Test the main block execution"""
+    
+    @patch('scanner.storage_auditor.get_buckets')
+    @patch('scanner.storage_auditor.analyze_storage')
+    @patch('scanner.storage_auditor.print_report')
+    def test_main_block_execution(self, mock_print, mock_analyze, mock_get_buckets):
+        """Test that the main block calls the expected functions"""
+        mock_get_buckets.return_value = ["gs://test-bucket"]
+        mock_analyze.return_value = [{"severity": "MEDIUM", "rule": "TEST"}]
+        
+        # Execute the main block by importing the module
+        from scanner.storage_auditor import __main__
+        
+        mock_get_buckets.assert_called_once()
+        mock_analyze.assert_called_once_with(["gs://test-bucket"])
+        mock_print.assert_called_once_with([{"severity": "MEDIUM", "rule": "TEST"}])
