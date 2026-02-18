@@ -101,7 +101,8 @@ def check_logging_disabled(rules):
     findings = []
 
     for rule in rules:
-        if not rule.get("logConfig", {}).get("enable") is False:
+        log_config = rule.get("logConfig", {})
+        if not log_config.get("enable"):
             findings.append({
                 "severity": "MEDIUM",
                 "rule": "FIREWALL_LOGGING_DISABLED",
