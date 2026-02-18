@@ -136,7 +136,7 @@ def print_report(findings):
 
     for finding in findings:
         print(f"[{finding['severity']}] {finding['rule']}")
-        print(f"Resource: {resource['resource']}")
+        print(f"Resource: {finding['resource']}")
 
         if "source" in finding:
             print(f"Source: {finding['source']}")
