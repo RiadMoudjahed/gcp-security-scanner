@@ -210,21 +210,4 @@ if __name__ == "__main__":
     findings = analyze_storage(buckets)
     print_report(findings)
 
-class TestStorageMainBlock:
-    """Test the main block execution (covers lines 209-211)"""
-    
-    @patch('scanner.storage_auditor.get_buckets')
-    @patch('scanner.storage_auditor.analyze_storage')
-    @patch('scanner.storage_auditor.print_report')
-    def test_main_block_execution(self, mock_print, mock_analyze, mock_get_buckets):
-        """Test that the main block calls the expected functions"""
-        mock_get_buckets.return_value = ["gs://test-bucket"]
-        mock_analyze.return_value = [{"severity": "MEDIUM", "rule": "TEST"}]
-        
-        # Execute the main block by importing and running the module
-        import runpy
-        runpy.run_module('scanner.storage_auditor', run_name='__main__')
-        
-        mock_get_buckets.assert_called_once()
-        mock_analyze.assert_called_once_with(["gs://test-bucket"])
-        mock_print.assert_called_once_with([{"severity": "MEDIUM", "rule": "TEST"}])
+
