@@ -4,7 +4,7 @@
 
 A Python-based security auditing tool that scans Google Cloud Platform projects for common misconfigurations across IAM, Firewall, and Storage resources.
 
-![CI/CD Pipeline](https://github.com/RiadMoudjahed/gcp-security-scanner/actions/workflows/security-pipeline.yml/badge.svg)
+![CI/CD Pipeline](https://github.com/RiadMoudjahed/gcp-security-scanner/actions/workflows/security-pipeline.yml/badge.svg?branch=main)
 
 </div>
 
