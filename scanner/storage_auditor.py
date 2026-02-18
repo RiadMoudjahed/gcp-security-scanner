@@ -209,5 +209,3 @@ if __name__ == "__main__":
     buckets = get_buckets()
     findings = analyze_storage(buckets)
     print_report(findings)
-
-
