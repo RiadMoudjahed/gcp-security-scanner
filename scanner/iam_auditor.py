@@ -5,6 +5,7 @@ import subprocess
 
 def get_project_id():
     """Get the current GCP project ID from gcloud config."""
+    
     result = subprocess.run(
         ["gcloud", "config", "get-value", "project"],
         capture_output=True,
@@ -18,6 +19,7 @@ def get_iam_policy(project_id):
     Fetch the IAM policy for a project.
     Returns a dict with 'bindings' key.
     """
+    
     result = subprocess.run(
         ["gcloud", "projects", "get-iam-policy", project_id, "--format=json"],
         capture_output=True,
@@ -38,6 +40,7 @@ def check_primitive_roles(bindings):
 
     Returns a list of findings.
     """
+    
     findings = []
     
     if not bindings or not isinstance(bindings, list):
@@ -73,6 +76,7 @@ def check_public_access(bindings):
 
     Returns a list of findings.
     """
+    
     findings = []
     
     if not bindings or not isinstance(bindings, list):
@@ -109,6 +113,7 @@ def check_service_account_primitive_roles(bindings):
 
     A service account member starts with: "serviceAccount:"
     """
+    
     findings = []
     
     if not bindings or not isinstance(bindings, list):
@@ -141,6 +146,7 @@ def analyze_policy(policy):
     """
     Master function. Runs all checks and returns combined findings.
     """
+    
     if not isinstance(policy, dict):
         return []
         
@@ -156,6 +162,7 @@ def analyze_policy(policy):
 
 def print_report(findings, project_id):
     """Print a clean report."""
+    
     print("══════════════════════════════════════")
     print("GCP IAM Security Audit Report")
     print(f"Project: {project_id}")
