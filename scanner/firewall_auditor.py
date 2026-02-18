@@ -7,6 +7,7 @@ def get_firewall_rules():
     Fetch all firewall rules in the current project.
     Returns a list of firewall rule dicts.
     """
+    
     result = subprocess.run(
         ["gcloud", "compute", "firewall-rules", "list", "--format=json"],
         capture_output=True,
@@ -25,6 +26,7 @@ def check_public_exposure(rules):
     
     Returns a list of findings.
     """
+    
     findings = []
 
     for rule in rules:
