@@ -164,42 +164,42 @@ class TestStorageEdgeCases:
             assert findings[0]["member"] == "allUsers"
             assert findings[1]["member"] == "allAuthenticatedUsers"
 
-def test_error_handling_skips_problem_buckets(self):
-    """
-    GIVEN: A bucket that causes an error when accessing
-    WHEN:  We analyze the buckets
-    THEN:  The auditor skips it without crashing
-    """
-    fake_buckets = ["gs://error-bucket", "gs://good-bucket"]
-    
-    with patch('scanner.storage_auditor.get_bucket_iam_policy') as mock_get_policy, \
-         patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
+    def test_error_handling_skips_problem_buckets(self):
+        """
+        GIVEN: A bucket that causes an error when accessing
+        WHEN:  We analyze the buckets
+        THEN:  The auditor skips it without crashing
+        """
+        fake_buckets = ["gs://error-bucket", "gs://good-bucket"]
         
-        # Configure mocks to raise exceptions for the error bucket
-        def policy_side_effect(bucket):
-            if bucket == "gs://error-bucket":
-                raise Exception("Access denied")
-            return {"bindings": []}
-        
-        def metadata_side_effect(bucket):
-            if bucket == "gs://error-bucket":
-                raise Exception("Access denied")
-            return {
-                "uniform_access": False,
-                "versioning": False
-            }
-        
-        mock_get_policy.side_effect = policy_side_effect
-        mock_get_metadata.side_effect = metadata_side_effect
-        
-        findings = analyze_storage(fake_buckets)
-        
-        # Should only have findings from the second bucket (uniform_access + versioning)
-        assert len(findings) == 2
-        
-        # Verify all findings are from the good bucket
-        for finding in findings:
-            assert finding["resource"] == "gs://good-bucket"
+        with patch('scanner.storage_auditor.get_bucket_iam_policy') as mock_get_policy, \
+             patch('scanner.storage_auditor.get_bucket_metadata') as mock_get_metadata:
+            
+            # Configure mocks to raise exceptions for the error bucket
+            def policy_side_effect(bucket):
+                if bucket == "gs://error-bucket":
+                    raise Exception("Access denied")
+                return {"bindings": []}
+            
+            def metadata_side_effect(bucket):
+                if bucket == "gs://error-bucket":
+                    raise Exception("Access denied")
+                return {
+                    "uniform_access": False,
+                    "versioning": False
+                }
+            
+            mock_get_policy.side_effect = policy_side_effect
+            mock_get_metadata.side_effect = metadata_side_effect
+            
+            findings = analyze_storage(fake_buckets)
+            
+            # Should only have findings from the second bucket (uniform_access + versioning)
+            assert len(findings) == 2
+            
+            # Verify all findings are from the good bucket
+            for finding in findings:
+                assert finding["resource"] == "gs://good-bucket"
 
 
 class TestStorageHelperFunctions:
@@ -383,7 +383,7 @@ class TestStorageErrorHandling:
 
 
 class TestStorageMainBlock:
-    """Test the main block execution"""
+    """Test the main block execution (covers lines 209-211)"""
     
     @patch('scanner.storage_auditor.get_buckets')
     @patch('scanner.storage_auditor.analyze_storage')
@@ -393,8 +393,9 @@ class TestStorageMainBlock:
         mock_get_buckets.return_value = ["gs://test-bucket"]
         mock_analyze.return_value = [{"severity": "MEDIUM", "rule": "TEST"}]
         
-        # Execute the main block by importing the module
-        from scanner.storage_auditor import __main__
+        # Execute the main block by importing and running the module
+        import runpy
+        runpy.run_module('scanner.storage_auditor', run_name='__main__')
         
         mock_get_buckets.assert_called_once()
         mock_analyze.assert_called_once_with(["gs://test-bucket"])
