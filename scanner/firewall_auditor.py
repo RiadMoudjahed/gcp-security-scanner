@@ -135,8 +135,8 @@ def print_report(findings):
     count_critical = 0
 
     for finding in findings:
-        print(f"[{severity}] {rule}")
-        print(f"Resource: {resource}")
+        print(f"[{finding['severity']}] {finding['rule']}")
+        print(f"Resource: {resource['resource']}")
 
         if "source" in finding:
             print(f"Source: {finding['source']}")
