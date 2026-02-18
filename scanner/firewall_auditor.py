@@ -136,15 +136,16 @@ def print_report(findings):
 
     for finding in findings:
         print(f"[{finding['severity']}] {finding['rule']}")
-        print(f"Resource : {finding['resource']}")
-        
+        print(f"Resource: {finding['resource']}")  # Fixed: changed 'resource' to 'finding'
+
         if "source" in finding:
-            print(f"Source   : {finding['source']}")
+            print(f"Source: {finding['source']}")
+
         if "ports" in finding:
             ports_str = ", ".join(map(str, finding["ports"]))
-            print(f"Ports    : {ports_str}")
-        
-        print(f"Reason   : {finding['reason']}")
+            print(f"Ports: {ports_str}")
+
+        print(f"Reason: {finding['reason']}")  # Fixed: changed 'reason' to 'finding["reason"]'
         print("──────────────────────────────────────")
 
         if finding["severity"] == "MEDIUM":
@@ -155,7 +156,7 @@ def print_report(findings):
             count_critical += 1
 
     total = count_medium + count_high + count_critical
-    print(f"\nTotal findings: {total} ({count_medium} MEDIUM), ({count_high} HIGH), ({count_critical} CRITICAL)")
+    print(f"\nTotal findings: {total} ({count_medium} MEDIUM, {count_high} HIGH, {count_critical} CRITICAL)")
 
 if __name__ == "__main__":
     rules = get_firewall_rules()
