@@ -97,19 +97,8 @@ def check_uniform_access(buckets):
     
     Uniform access means: only IAM policies control access, not legacy ACLs.
     Without it, you have two security systems to manage = confusion + risk.
-    
-    YOUR JOB:
-    - Loop through buckets
-    - Call get_bucket_metadata(bucket) to get metadata
-    - Check if metadata["uniform_access"] is False
-    - If False → append a finding
-    - Severity: "MEDIUM" (not as urgent as public access, but bad practice)
-    - Rule name: "UNIFORM_ACCESS_DISABLED"
-    
-    Hints:
-    - Wrap in try/except to skip buckets you can't access
-    - Use the same pattern as check_public_access
     """
+    
     findings = []
 
     for bucket in buckets:
@@ -135,15 +124,8 @@ def check_versioning(buckets):
     
     Versioning = keep old versions of files when they're overwritten or deleted.
     Without it: ransomware deletes your files → they're gone forever.
-    
-    YOUR JOB:
-    - Loop through buckets
-    - Call get_bucket_metadata(bucket)
-    - Check if metadata["versioning"] is False
-    - If False → append a finding
-    - Severity: "MEDIUM"
-    - Rule name: "VERSIONING_DISABLED"
     """
+    
     findings = []
 
     for bucket in buckets:
@@ -167,6 +149,7 @@ def analyze_storage(buckets):
     """
     Master function. Runs all checks and returns combined findings.
     """
+    
     findings = []
     findings.extend(check_public_access(buckets))
     findings.extend(check_uniform_access(buckets))
