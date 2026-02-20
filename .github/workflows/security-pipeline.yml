@@ -52,8 +52,6 @@ jobs:
 
       - name: Run Safety dependency scan
         run: safety check -r requirements.txt --full-report --continue-on-error
-        # --continue-on-error: report vulnerabilities but don't fail pipeline
-        # Remove this flag once you've reviewed and accepted/fixed findings
 
   # ─────────────────────────────────────────
   # JOB 3: Tests (Pytest)
