@@ -46,7 +46,6 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-          command: scan
           args: --continue-on-error
         # --continue-on-error: report vulnerabilities but don't fail pipeline
         # Remove this flag once you've reviewed and accepted/fixed findings
