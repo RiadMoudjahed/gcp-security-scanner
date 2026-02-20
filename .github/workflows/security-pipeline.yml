@@ -42,16 +42,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Run Safety CLI to check for vulnerabilities
+        uses: pyupio/safety-action@v1
         with:
-          python-version: '3.11'
-      
-      - name: Install Safety
-        run: pip install safety
-      
-      - name: Check for vulnerable dependencies
-        run: safety scan -r requirements.txt --continue-on-error
+          api-key: ${{ secrets.5dc0bcd7-6a2f-4668-b1f0-087f089b60b4 }}
+          command: scan
+          args: --continue-on-error
         # --continue-on-error: report vulnerabilities but don't fail pipeline
         # Remove this flag once you've reviewed and accepted/fixed findings
 
