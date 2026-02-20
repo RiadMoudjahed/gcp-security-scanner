@@ -50,10 +50,10 @@ jobs:
       - name: Install Safety
         run: pip install safety
 
-      - name: Run Safety scan with direct CLI
+      - name: Run Safety scan (CI mode)
         env:
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_TOKEN }}
-        run: safety scan --continue-on-error
+        run: safety scan --ci --continue-on-error
         # --continue-on-error: report vulnerabilities but don't fail pipeline
         # Remove this flag once you've reviewed and accepted/fixed findings
 
