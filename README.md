@@ -6,6 +6,8 @@ A Python-based security auditing tool that scans Google Cloud Platform projects 
 
 ![CI/CD Pipeline](https://github.com/RiadMoudjahed/gcp-security-scanner/actions/workflows/security-pipeline.yml/badge.svg?branch=main)
 
+![License](https://img.shields.io/badge/license-MIT-green)
+
 </div>
 
 
